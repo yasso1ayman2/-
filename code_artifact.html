@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مَسار — رفيق التعافي</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-black: #000000;
+      --bg-card: #0a0a0a;
+      --bg-elevated: #121212;
+      --border-subtle: #1f1f1f;
+      --nano-green: #00e676;
+      --sos-red: #dc2626;
+    }
+    * {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      line-height: 1.65;
+    }
+    .card-surface {
+      background-color: #0a0a0a;
+      border: 1px solid #1c1c1c;
+    }
+    .input-surface {
+      background-color: #111111;
+      border: 1px solid #262626;
+      color: #ffffff;
+    }
+    .input-surface:focus {
+      outline: none;
+      border-color: #00e676;
+    }
+    .btn-nano {
+      background-color: #00e676;
+      color: #000000;
+      font-weight: 600;
+      transition: opacity 0.15s ease;
+    }
+    .btn-nano:hover {
+      opacity: 0.9;
+    }
+    .btn-nano-outline {
+      background-color: rgba(0, 230, 118, 0.08);
+      border: 1px solid rgba(0, 230, 118, 0.35);
+      color: #00e676;
+      transition: background-color 0.15s ease;
+    }
+    .btn-nano-outline:hover {
+      background-color: rgba(0, 230, 118, 0.16);
+    }
+    .breath-circle {
+      transition: border-color 0.4s ease, background-color 0.4s ease;
+    }
+    .breath-inhale {
+      border-color: #00e676;
+      background-color: rgba(0, 230, 118, 0.12);
+    }
+    .breath-hold {
+      border-color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+    .breath-exhale {
+      border-color: #404040;
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #000000;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #262626;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black text-white custom-scroll">
+
+  <!-- إشعار Toast هادئ وبسيط -->
+  <div id="toastContainer" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 translate-y-2">
+    <div id="toastMessage" class="bg-[#111111] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs sm:text-sm font-medium flex items-center gap-2 border border-[#00e676]/50"></div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. واجهة التمويه الهادئة (مُنجِز — مفكرة المهام) -->
+  <!-- ========================================== -->
+  <div id="stealthView" class="hidden min-h-screen bg-black text-white pb-16">
+    <header class="bg-black border-b border-[#1c1c1c] sticky top-0 z-20">
+      <div class="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-[#00e676] text-black flex items-center justify-center font-bold text-sm">✓</div>
+          <div>
+            <h1 class="font-semibold text-white text-base leading-tight">مُنجِز — المفكرة اليومية</h1>
+            <p class="text-xs text-neutral-500">المهام والملاحظات الشخصية</p>
+          </div>
+        </div>
+        <button id="openPinModalBtn" type="button" class="text-xs bg-[#111111] hover:bg-[#1a1a1a] text-neutral-300 px-3.5 py-2 rounded-lg border border-[#262626] transition">
+          <span class="hidden">🔒</span>
+          <span>المجلد الخاص</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+      <div class="card-surface p-4 rounded-xl">
+        <h2 class="text-xs font-medium text-neutral-400 mb-2.5">إضافة مهمة جديدة</h2>
+        <div class="flex gap-2">
+          <input id="decoyTaskInput" type="text" placeholder="اكتب مهمة يومية..." class="input-surface flex-1 rounded-lg px-3.5 py-2 text-sm" />
+          <button id="addDecoyTaskBtn" type="button" class="btn-nano px-4 py-2 rounded-lg text-sm">إضافة</button>
+        </div>
+      </div>
+
+      <div class="card-surface p-4 rounded-xl">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-medium text-neutral-400">قائمة المهام</h3>
+          <span id="decoyTaskCount" class="text-xs text-[#00e676] font-medium">0 مهام</span>
+        </div>
+        <div id="decoyTaskList" class="space-y-2"></div>
+      </div>
+
+      <div class="card-surface p-4 rounded-xl">
+        <h3 class="text-xs font-medium text-neutral-400 mb-2">ملاحظات</h3>
+        <textarea id="decoyQuickNote" rows="3" placeholder="اكتب ملاحظاتك هنا..." class="input-surface w-full rounded-lg p-3 text-sm"></textarea>
+        <div class="flex justify-end mt-2.5">
+          <button id="saveDecoyNoteBtn" type="button" class="text-xs bg-white hover:bg-neutral-200 text-black px-4 py-1.5 rounded-lg font-medium transition">حفظ الملاحظة</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- نافذة إدخال الرقم السري PIN -->
+    <div id="pinModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="card-surface rounded-2xl max-w-sm w-full p-6 text-center">
+        <h3 class="font-semibold text-white text-base mb-1">المرور إلى المساحة الخاصة</h3>
+        <p class="text-xs text-neutral-400 mb-4">أدخل الرقم السري للمتابعة (الافتراضي: 1234)</p>
+        <input id="pinInput" type="password" maxlength="6" inputmode="numeric" placeholder="••••" class="input-surface w-full text-center tracking-widest text-lg font-semibold rounded-lg py-2.5 mb-2" />
+        <p id="pinErrorMsg" class="hidden text-xs text-red-500 font-medium mb-2">الرقم السري غير صحيح (الافتراضي: 1234)</p>
+        <div class="flex gap-2 mt-4">
+          <button id="submitPinBtn" type="button" class="btn-nano flex-1 py-2.5 rounded-lg text-sm">دخول</button>
+          <button id="closePinModalBtn" type="button" class="px-4 bg-[#141414] hover:bg-[#1f1f1f] text-neutral-300 py-2.5 rounded-lg text-sm border border-[#262626] transition">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- 2. التطبيق الرئيسي للتعافي (مَسار — تصميم هادئ وبسيط) -->
+  <!-- ===================================================== -->
+  <div id="recoveryView" class="min-h-screen bg-black text-white pb-20">
+    <!-- الهيدر العلوي البسيط -->
+    <header class="bg-black/95 border-b border-[#1c1c1c] sticky top-0 z-30">
+      <div class="max-w-3xl mx-auto px-4 py-3.5 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-3">
+          <div class="w-2.5 h-2.5 rounded-full bg-[#00e676]"></div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h1 class="font-semibold text-base sm:text-lg text-white tracking-tight">مَسار</h1>
+              <span id="userLevelBadge" class="text-[11px] bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/30 px-2 py-0.5 rounded-md font-medium">المستوى 1</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- زر النجدة الفورية (الأحمر الوحيد في التطبيق) -->
+          <button id="headerSosBtn" type="button" class="bg-red-600 hover:bg-red-500 text-white px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition">
+            <span class="hidden">🚨</span>
+            <span>نجدة فورية (SOS)</span>
+          </button>
+          <!-- زر التمويه الفوري -->
+          <button id="activateStealthBtn" type="button" class="bg-[#111111] hover:bg-[#1c1c1c] text-neutral-300 border border-[#262626] px-3 py-1.5 rounded-lg text-xs font-medium transition" title="تحويل الشاشة لمفكرة مهام">
+            <span class="hidden">👁️‍🗨️</span>
+            <span>تمويه فوري</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-3xl mx-auto px-4 pt-5 space-y-5">
+
+      <!-- بطاقة العهد الشخصي + زر النجدة -->
+      <div class="card-surface rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <span class="text-[11px] font-medium text-[#00e676]">عهدك لنفسك</span>
+          <p id="personalPledgeDisplay" class="text-sm sm:text-base font-normal text-neutral-200 leading-relaxed">
+            "أنا أقوى من شهوة عابرة مدتها دقائق وتترك وراءها ساعات من الندم. الله يراني، وقلبي يستحق النور والسكينة."
+          </p>
+        </div>
+        <button id="heroSosBtn" type="button" class="w-full sm:w-auto shrink-0 bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2.5 rounded-lg text-xs sm:text-sm transition">
+          <span class="hidden">🌊</span>
+          <span>أشعر برغبة الآن — اكسر الموجة</span>
+        </button>
+      </div>
+
+      <!-- شريط التبويبات الهادئ -->
+      <nav class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-[#0a0a0a] p-1.5 rounded-xl border border-[#1c1c1c]">
+        <button type="button" data-tab="dashboardTab" class="tab-btn bg-[#00e676] text-black font-semibold py-2 px-3 rounded-lg text-xs sm:text-sm transition">
+          <span class="hidden">📊</span>
+          <span>مؤشر النقاء</span>
+        </button>
+        <button type="button" data-tab="triggersTab" class="tab-btn text-neutral-400 hover:text-white font-medium py-2 px-3 rounded-lg text-xs sm:text-sm transition">
+          <span class="hidden">🔍</span>
+          <span>تحليل المحفزات</span>
+        </button>
+        <button type="button" data-tab="habitsTab" class="tab-btn text-neutral-400 hover:text-white font-medium py-2 px-3 rounded-lg text-xs sm:text-sm transition">
+          <span class="hidden">🌱</span>
+          <span>العادات والتحصين</span>
+        </button>
+        <button type="button" data-tab="settingsTab" class="tab-btn text-neutral-400 hover:text-white font-medium py-2 px-3 rounded-lg text-xs sm:text-sm transition">
+          <span class="hidden">⚙️</span>
+          <span>الخصوصية والعهد</span>
+        </button>
+      </nav>
+
+      <!-- ===================================== -->
+      <!-- القسم 1: لوحة مؤشر النقاء (Dashboard) -->
+      <!-- ===================================== -->
+      <section id="dashboardTab" class="tab-content space-y-4">
+        <!-- البطاقات الإحصائية الثلاث -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <!-- نسبة الأيام النقية -->
+          <div class="card-surface rounded-xl p-4">
+            <span class="text-xs text-neutral-400 block mb-1">نسبة النقاء (آخر 30 يوماً)</span>
+            <div class="flex items-baseline gap-2 my-1">
+              <span id="cleanPercentageText" class="text-3xl font-bold text-[#00e676]">90%</span>
+              <span id="cleanDaysCountText" class="text-xs text-neutral-500">(27 من 30 يوم)</span>
+            </div>
+            <div class="w-full bg-[#171717] h-1.5 rounded-full overflow-hidden mt-3">
+              <div id="cleanPercentageBar" class="bg-[#00e676] h-full rounded-full" style="width: 90%"></div>
+            </div>
+            <p class="text-[11px] text-neutral-500 mt-2.5 leading-relaxed">
+              الزلة الواحدة تنقص 3% فقط ولا تمحو تعب الشهر، فلا مجال لليأس.
+            </p>
+          </div>
+
+          <!-- موجات الرغبة التي تم الانتصار عليها -->
+          <div class="card-surface rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-neutral-400 block mb-1">موجات رغبة انتصرت عليها</span>
+              <div class="flex items-baseline gap-2 my-1">
+                <span id="urgesSurfedCount" class="text-3xl font-bold text-white">0</span>
+                <span class="text-xs text-neutral-500">انتصار واعي</span>
+              </div>
+              <p class="text-[11px] text-neutral-500 mt-1">كل موجة تتخطاها تضعف مسار العادة في الدماغ.</p>
+            </div>
+            <button id="quickVictoryBtn" type="button" class="btn-nano-outline mt-3 w-full py-1.5 rounded-lg text-xs font-medium">
+              + سجّل انتصاراً سريعاً على رغبة الآن
+            </button>
+          </div>
+
+          <!-- رصيد نقاط الإرادة التراكمي -->
+          <div class="card-surface rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <span class="text-xs text-neutral-400 block mb-1">رصيد الإرادة التراكمي (لا يتصفر)</span>
+              <div class="flex items-baseline gap-2 my-1">
+                <span id="willpowerPointsText" class="text-3xl font-bold text-white">0</span>
+                <span class="text-xs text-[#00e676]">نقطة</span>
+              </div>
+              <p id="nextLevelHint" class="text-[11px] text-neutral-500 mt-1">رصيدك محفوظ دائماً ويزيد مع كل يوم نقي.</p>
+            </div>
+            <div class="w-full bg-[#171717] h-1.5 rounded-full overflow-hidden mt-3">
+              <div id="xpProgressBar" class="bg-white h-full rounded-full" style="width: 45%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- تسجيل حالة اليوم -->
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3.5">
+            <div>
+              <h2 class="font-semibold text-sm sm:text-base text-white">تسجيل حالة اليوم</h2>
+              <p class="text-xs text-neutral-500">سجّل يومك بصدق وهدوء دون جلد للذات</p>
+            </div>
+            <span id="todayDateLabel" class="text-xs text-neutral-400 font-normal"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button id="markCleanTodayBtn" type="button" class="bg-[#111111] hover:bg-[#171717] border border-[#00e676]/40 text-white p-3.5 rounded-lg text-right transition">
+              <div class="flex items-center justify-between w-full mb-1">
+                <span class="font-semibold text-xs sm:text-sm text-[#00e676]"><span class="hidden">✅ </span>يوم نقي تماماً</span>
+                <span class="text-[11px] text-neutral-400">+20 نقطة</span>
+              </div>
+              <p class="text-[11px] text-neutral-400">الحمد لله، حفظت نفسي اليوم والتزمت بالعفة.</p>
+            </button>
+
+            <button id="markHeroicTodayBtn" type="button" class="bg-[#111111] hover:bg-[#171717] border border-[#262626] hover:border-[#00e676]/40 text-white p-3.5 rounded-lg text-right transition">
+              <div class="flex items-center justify-between w-full mb-1">
+                <span class="font-semibold text-xs sm:text-sm text-white"><span class="hidden">🛡️ </span>صمود أمام رغبة شديدة</span>
+                <span class="text-[11px] text-[#00e676]">+35 نقطة</span>
+              </div>
+              <p class="text-[11px] text-neutral-400">جاءتني رغبة قوية اليوم لكني قاومتها وركبت الموجة بسلام.</p>
+            </button>
+
+            <button id="markSlipTodayBtn" type="button" class="bg-[#111111] hover:bg-[#171717] border border-[#262626] text-neutral-300 p-3.5 rounded-lg text-right transition">
+              <div class="flex items-center justify-between w-full mb-1">
+                <span class="font-semibold text-xs sm:text-sm text-neutral-200"><span class="hidden">🔄 </span>وقعت في زلة (تعلّم ونهوض)</span>
+                <span class="text-[11px] text-neutral-500">تحليل السبب</span>
+              </div>
+              <p class="text-[11px] text-neutral-500">لن أستسلم لليأس؛ سأحلل المحفز الآن وأغتسل وأكمل مساري.</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- خريطة آخر 30 يوماً -->
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="font-semibold text-sm text-white">سجل آخر 30 يوماً</h3>
+              <p class="text-xs text-neutral-500">اضغط على أي يوم لتبديل حالته</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs text-neutral-400">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#00e676]/30 border border-[#00e676] inline-block"></span> نقي</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#00e676] inline-block"></span> صمود</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#1f1f1f] border border-neutral-600 inline-block"></span> زلة</span>
+            </div>
+          </div>
+
+          <div id="thirtyDaysGrid" class="grid grid-cols-6 sm:grid-cols-10 gap-2 mt-3"></div>
+        </div>
+      </section>
+
+      <!-- ========================================= -->
+      <!-- القسم 2: تحليل المحفزات وسجل التعلم (Triggers) -->
+      <!-- ========================================= -->
+      <section id="triggersTab" class="tab-content hidden space-y-4">
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <h2 class="font-semibold text-sm sm:text-base text-white mb-1">رصد المحفزات (Triggers)</h2>
+          <p class="text-xs text-neutral-500 mb-4">معرفة السبب الذي يسبق الرغبة يمكّنك من قطع الطريق عليه مبكراً:</p>
+
+          <form id="triggerForm" class="space-y-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-neutral-400 mb-1.5">المحفز الأساسي</label>
+                <select id="triggerCauseSelect" class="input-surface w-full rounded-lg px-3 py-2 text-xs sm:text-sm">
+                  <option value="تصفح ريلز / تيك توك / سوشيال ميديا">تصفح ريلز / تيك توك / سوشيال ميديا</option>
+                  <option value="السهر في السرير مع الموبايل">السهر في السرير مع الموبايل وحيداً</option>
+                  <option value="الملل والفراغ وعدم وجود خطة لليوم">الملل والفراغ وعدم وجود خطة لليوم</option>
+                  <option value="التوتر أو الضغط النفسي والدراسي">التوتر أو الضغط النفسي والهروب منه</option>
+                  <option value="الشعور بالوحدة أو الضيق العاطفي">الشعور بالوحدة أو الضيق العاطفي</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs text-neutral-400 mb-1.5">التوقيت</label>
+                <select id="triggerTimeSelect" class="input-surface w-full rounded-lg px-3 py-2 text-xs sm:text-sm">
+                  <option value="آخر الليل (بعد 11 مساءً)">آخر الليل (بعد 11 مساءً)</option>
+                  <option value="عند الاستيقاظ في السرير">عند الاستيقاظ في السرير</option>
+                  <option value="فترة الظهيرة / بعد العودة للبيت">فترة الظهيرة / بعد العودة للبيت</option>
+                  <option value="المساء وأوقات الفراغ">المساء وأوقات الفراغ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-neutral-400 mb-1.5">النتيجة</label>
+                <select id="triggerOutcomeSelect" class="input-surface w-full rounded-lg px-3 py-2 text-xs sm:text-sm">
+                  <option value="انتصرت عليها وركبت الموجة">انتصرت عليها وركبت الموجة</option>
+                  <option value="وقعت في زلة وتبت الآن">وقعت في زلة، واغتسلت واستغفرت الآن</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs text-neutral-400 mb-1.5">الخطوة الوقائية للمرة القادمة</label>
+                <input id="triggerActionInput" type="text" placeholder="مثال: ترك الهاتف خارج غرفة النوم..." class="input-surface w-full rounded-lg px-3 py-2 text-xs sm:text-sm" />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-nano px-5 py-2 rounded-lg text-xs sm:text-sm">
+              + حفظ التحليل وتحديث رادار الخطر
+            </button>
+          </form>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card-surface rounded-xl p-4 sm:p-5">
+            <h3 class="font-semibold text-xs sm:text-sm text-white mb-3">أكثر المحفزات تكراراً</h3>
+            <div id="triggerStatsBars" class="space-y-3"></div>
+          </div>
+
+          <div class="card-surface rounded-xl p-4 sm:p-5">
+            <h3 class="font-semibold text-xs sm:text-sm text-white mb-3">قواعد الوقاية الثابتة</h3>
+            <div id="smartPreventionRules" class="space-y-2.5 text-xs text-neutral-300"></div>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <h3 class="font-semibold text-xs sm:text-sm text-white mb-3">سجل المواقف والدروس</h3>
+          <div id="triggerHistoryList" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- القسم 3: العادات البديلة والتحصين اليومي (Habits) -->
+      <!-- ========================================== -->
+      <section id="habitsTab" class="tab-content hidden space-y-4">
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="font-semibold text-sm sm:text-base text-white">العادات البديلة والتحصين اليومي</h2>
+              <p class="text-xs text-neutral-500">خطوات يومية هادئة لبناء التوازن وتفريغ الطاقة</p>
+            </div>
+            <span id="habitsCompletionBadge" class="text-xs bg-[#00e676]/10 text-[#00e676] border border-[#00e676]/30 px-2.5 py-1 rounded-md font-medium">0 / 0 مكتمل</span>
+          </div>
+
+          <div id="recoveryHabitsList" class="space-y-2 mb-4"></div>
+
+          <div class="flex gap-2 pt-3 border-t border-[#1c1c1c]">
+            <input id="newHabitInput" type="text" placeholder="أضف عادة يومية جديدة..." class="input-surface flex-1 rounded-lg px-3.5 py-2 text-xs sm:text-sm" />
+            <button id="addHabitBtn" type="button" class="btn-nano px-4 py-2 rounded-lg text-xs sm:text-sm">إضافة</button>
+          </div>
+        </div>
+
+        <div class="card-surface rounded-xl p-4 sm:p-5">
+          <h3 class="font-semibold text-sm text-white mb-2">بروتوكول النهوض السريع (لمنع تكرار الزلة في نفس اليوم)</h3>
+          <p class="text-xs text-neutral-400 mb-3 leading-relaxed">
+            إذا حدثت زلة، لا تترك نفسك لفكرة "اليوم ضاع على أي حال". اتبع هذه الخطوات الأربع فوراً لقطع السلسلة:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+              <strong class="text-[#00e676] block mb-1">1. الاغتسال الفوري وتغيير المكان</strong>
+              لا تبقَ في السرير بعد الزلة؛ قم فوراً للاغتسال لتجديد نشاط الجهاز العصبي.
+            </div>
+            <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+              <strong class="text-[#00e676] block mb-1">2. ركعتا التوبة والاستغفار</strong>
+              صلِّ ركعتين فور الاغتسال؛ فالحسنات يذهبن السيئات وتعيد للقلب سكينته.
+            </div>
+            <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+              <strong class="text-[#00e676] block mb-1">3. حماية بقية اليوم</strong>
+              يومك 24 ساعة؛ زلة مدتها دقائق لا تلغي 98% من يومك النقي.
+            </div>
+            <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+              <strong class="text-[#00e676] block mb-1">4. إغلاق المنفذ فوراً</strong>
+              احذف أو احظر الحساب أو التطبيق الذي بدأ منه المحفز في نفس اللحظة.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- القسم 4: الخصوصية، الرقم السري، ورسالة العهد -->
+      <!-- ========================================== -->
+      <section id="settingsTab" class="tab-content hidden space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card-surface rounded-xl p-4 sm:p-5">
+            <h3 class="font-semibold text-sm text-white mb-1">رسالتك إلى نفسك وقت الضعف</h3>
+            <p class="text-xs text-neutral-500 mb-3">تظهر لك في الصفحة الرئيسية وفي نافذة الطوارئ:</p>
+            <textarea id="pledgeInput" rows="3" class="input-surface w-full rounded-lg p-3 text-xs sm:text-sm"></textarea>
+            <button id="savePledgeBtn" type="button" class="btn-nano mt-3 px-4 py-2 rounded-lg text-xs sm:text-sm">
+              حفظ رسالة العهد
+            </button>
+          </div>
+
+          <div class="card-surface rounded-xl p-4 sm:p-5">
+            <h3 class="font-semibold text-sm text-white mb-1">إعدادات الخصوصية والتمويه</h3>
+            <p class="text-xs text-neutral-500 mb-3">حماية التطبيق برقم سري مع واجهة المفكرة اليومية (الافتراضي: 1234):</p>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs text-neutral-400 mb-1">تغيير الرقم السري</label>
+                <div class="flex gap-2">
+                  <input id="newPinInput" type="password" maxlength="6" inputmode="numeric" placeholder="أدخل رقماً سرياً جديداً" class="input-surface flex-1 rounded-lg px-3 py-2 text-xs sm:text-sm" />
+                  <button id="saveNewPinBtn" type="button" class="bg-white hover:bg-neutral-200 text-black px-4 py-2 rounded-lg text-xs font-semibold transition">تحديث الرمز</button>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between bg-[#111111] p-3 rounded-lg border border-[#1f1f1f]">
+                <div>
+                  <span class="text-xs font-medium text-white block">فتح التطبيق على شاشة التمويه دائماً</span>
+                  <span class="text-[11px] text-neutral-500">يظهر كمفكرة مهام حتى تدخل رقمك السري</span>
+                </div>
+                <input id="startInStealthToggle" type="checkbox" class="w-4 h-4 accent-[#00e676] rounded cursor-pointer" />
+              </div>
+
+              <!-- أدوات التبديل السريع في الإعدادات -->
+              <div id="previewHelperBar" class="flex items-center justify-between bg-[#111111] p-3 rounded-lg border border-[#1f1f1f]">
+                <span class="text-xs text-neutral-400">معاينة واجهة التمويه</span>
+                <div class="flex items-center gap-2">
+                  <button id="quickSwitchStealthBtn" type="button" class="btn-nano-outline px-3 py-1 rounded-md text-xs font-medium">
+                    تبديل سريع (التمويه / التعافي)
+                  </button>
+                  <button id="hideHelperBarBtn" type="button" class="hidden text-xs text-neutral-500">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. نافذة النجدة الفورية (SOS Modal — تصميم هادئ غير مشتت) -->
+  <!-- ========================================================================= -->
+  <div id="sosModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto p-3 sm:p-6">
+    <div class="max-w-2xl mx-auto card-surface rounded-2xl p-4 sm:p-6 space-y-5 my-2 border border-[#262626]">
+      <!-- رأس نافذة الطوارئ -->
+      <div class="flex items-center justify-between border-b border-[#1c1c1c] pb-3.5">
+        <div>
+          <h2 class="font-semibold text-base sm:text-lg text-white">غرفة الهدوء وكسر الموجة</h2>
+          <p class="text-xs text-neutral-400">ذروة الرغبة مؤقتة وتنكسر خلال دقائق إذا لم تغذِّها بالمشاهدة</p>
+        </div>
+        <button id="closeSosModalBtn" type="button" class="bg-[#141414] hover:bg-[#1f1f1f] text-neutral-300 px-3 py-1.5 rounded-lg text-xs border border-[#262626]">إغلاق ✕</button>
+      </div>
+
+      <!-- أولاً: التذكير الإيماني -->
+      <div class="bg-[#111111] border border-[#00e676]/30 rounded-xl p-4 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-medium text-[#00e676]">تذكير إيماني</span>
+          <button id="nextSpiritualQuoteBtn" type="button" class="text-xs bg-black hover:bg-[#1a1a1a] text-neutral-300 px-2.5 py-1 rounded-md border border-[#262626] transition">
+            تذكير آخر ↻
+          </button>
+        </div>
+        <p id="spiritualQuoteText" class="text-sm sm:text-base font-medium text-white leading-relaxed"></p>
+        <p id="spiritualQuoteSub" class="text-xs text-neutral-400"></p>
+      </div>
+
+      <!-- ثانياً: تمرين التنفس الهادئ + خطوات كسر النمط -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <!-- التنفس الموجه الهادئ (بدون حركات مزعجة) -->
+        <div class="bg-[#111111] border border-[#1f1f1f] rounded-xl p-4 flex flex-col items-center justify-between text-center">
+          <span class="text-xs text-neutral-400">تنظيم التنفس (4 شهيق - 7 حبس - 8 زفير)</span>
+          <div class="my-4 flex items-center justify-center">
+            <div id="breathCircle" class="breath-circle w-28 h-28 rounded-full border-2 border-[#00e676]/60 flex flex-col items-center justify-center bg-[#00e676]/5">
+              <span id="breathPhaseText" class="text-sm font-semibold text-white">استعد</span>
+              <span id="breathSecText" class="text-xs text-[#00e676] mt-0.5">4 ث</span>
+            </div>
+          </div>
+          <button id="toggleBreathingBtn" type="button" class="btn-nano-outline w-full py-2 rounded-lg text-xs font-medium">
+            بدء التنفس الموجه
+          </button>
+        </div>
+
+        <!-- خطوات كسر الحلقة الجسدية -->
+        <div class="bg-[#111111] border border-[#1f1f1f] rounded-xl p-4 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-medium text-white">خطوات عملية فورية</span>
+              <span id="sosWaveTimer" class="text-xs font-mono text-[#00e676] bg-black px-2 py-0.5 rounded border border-[#262626]">05:00</span>
+            </div>
+            <p class="text-[11px] text-neutral-500 mb-3">نفّذ خطوتين الآن لكسر الحلقة:</p>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2.5 bg-black p-2.5 rounded-lg border border-[#1f1f1f] cursor-pointer">
+                <input type="checkbox" class="sos-step-check accent-[#00e676] w-4 h-4 rounded" />
+                <span class="text-neutral-200">قمت من السرير وغيرت مكاني فوراً</span>
+              </label>
+              <label class="flex items-center gap-2.5 bg-black p-2.5 rounded-lg border border-[#1f1f1f] cursor-pointer">
+                <input type="checkbox" class="sos-step-check accent-[#00e676] w-4 h-4 rounded" />
+                <span class="text-neutral-200">استعذت بالله وتوضأت أو غسلت وجهي بماء بارد</span>
+              </label>
+              <label class="flex items-center gap-2.5 bg-black p-2.5 rounded-lg border border-[#1f1f1f] cursor-pointer">
+                <input type="checkbox" class="sos-step-check accent-[#00e676] w-4 h-4 rounded" />
+                <span class="text-neutral-200">أغلقت الشاشة أو التطبيق المحفز تماماً</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ثالثاً: تحدي التركيز الذهني الهادئ -->
+      <div class="bg-[#111111] border border-[#1f1f1f] rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <div>
+            <h3 class="text-xs sm:text-sm font-medium text-white">تنشيط التركيز الذهني</h3>
+            <p class="text-[11px] text-neutral-500">حل المسألة الحسابية يصرف الانتباه الذهني عن الفكرة الملحة:</p>
+          </div>
+          <span id="mathStreakBadge" class="text-xs text-[#00e676] bg-black border border-[#262626] px-2.5 py-1 rounded-md font-medium">0 / 3 إجابات</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 mt-3">
+          <div id="mathQuestionBox" class="bg-black border border-[#262626] px-4 py-2 rounded-lg font-semibold text-sm text-white">
+            17 + 28 = ؟
+          </div>
+          <input id="mathAnswerInput" type="number" placeholder="الناتج" class="input-surface w-24 rounded-lg px-3 py-2 text-sm font-medium" />
+          <button id="checkMathBtn" type="button" class="bg-white hover:bg-neutral-200 text-black px-4 py-2 rounded-lg text-xs font-semibold transition">تحقق</button>
+          <span id="mathFeedbackText" class="text-xs font-medium text-[#00e676]"></span>
+        </div>
+      </div>
+
+      <!-- زر إتمام النجاة من الموجة -->
+      <div class="pt-1">
+        <button id="completeSosSuccessBtn" type="button" class="btn-nano w-full py-3 rounded-xl text-sm">
+          <span class="hidden">✅ </span>الحمد لله، هدأت الموجة وانتصرت على نفسي (+25 نقطة إرادة)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'masar_recovery_v1_state';
+
+    const spiritualQuotes = [
+      {
+        text: "﴿وَأَمَّا مَنْ خَافَ مَقَامَ رَبِّهِ وَنَهَى النَّفْسَ عَنِ الْهَوَىٰ * فَإِنَّ الْجَنَّةَ هِيَ الْمَأْوَىٰ﴾",
+        sub: "من ترك شيئاً لله عوّضه الله خيراً منه وأنساً في صدره ونوراً في قلبه."
+      },
+      {
+        text: "﴿قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ۚ ذَٰلِكَ أَزْكَىٰ لَهُمْ﴾",
+        sub: "الشهوة تعدك بلذة لثوانٍ ثم تتركك في ضيق، والعفة تترك في قلبك سكينة وعزة."
+      },
+      {
+        text: "الصبر عن الشهوة أيسر من الصبر على ألم الندم بعدها",
+        sub: "قم الآن من مكانك وتوضأ، فإن الوضوء والحركة يطفئان حدة الرغبة."
+      },
+      {
+        text: "﴿إِنَّهُ مَن يَتَّقِ وَيَصْبِرْ فَإِنَّ اللَّهَ لَا يُضِيعُ أَجْرَ الْمُحْسِنِينَ﴾",
+        sub: "كل لحظة مجاهدة لنفسك في الخلوات مأجورة ومحفوظة عند الله."
+      },
+      {
+        text: "﴿قُلْ يَا عِبَادِيَ الَّذِينَ أَسْرَفُوا عَلَىٰ أَنفُسِهِمْ لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ﴾",
+        sub: "لا تستمع لوسواس اليأس؛ كل يوم نقي هو بداية حقيقية."
+      }
+    ];
+
+    function getDefaultDays() {
+      const days = [];
+      const now = new Date();
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        let status = 'clean';
+        if (i === 14 || i === 6) status = 'slip';
+        if (i === 9 || i === 3) status = 'heroic';
+        days.push({
+          date: dateStr,
+          dayNum: d.getDate(),
+          status: status
+        });
+      }
+      return days;
+    }
+
+    const defaultState = {
+      pin: '1234',
+      startInStealth: false,
+      isStealthActive: false,
+      pledge: 'أنا أقوى من شهوة عابرة مدتها دقائق وتترك وراءها ساعات من الندم. الله يراني، وقلبي يستحق النور والسكينة.',
+      urgesSurfed: 5,
+      willpowerXP: 240,
+      daysHistory: getDefaultDays(),
+      triggersLog: [
+        {
+          id: 't1',
+          cause: 'تصفح ريلز / تيك توك / سوشيال ميديا',
+          time: 'آخر الليل (بعد 11 مساءً)',
+          outcome: 'انتصرت عليها وركبت الموجة',
+          action: 'إبعاد الهاتف عن السرير قبل النوم',
+          date: 'منذ يومين'
+        },
+        {
+          id: 't2',
+          cause: 'السهر في السرير مع الموبايل',
+          time: 'آخر الليل (بعد 11 مساءً)',
+          outcome: 'وقعت في زلة وتبت الآن',
+          action: 'النوم المبكر وترك الهاتف خارج الغرفة',
+          date: 'منذ 6 أيام'
+        }
+      ],
+      habits: [
+        { id: 'h1', title: 'المحافظة على الصلوات الخمس في وقتها وأذكار الصباح والمساء', done: true },
+        { id: 'h2', title: 'إبقاء الهاتف خارج السرير عند النوم', done: true },
+        { id: 'h3', title: 'غض البصر وتجنب المقاطع المثيرة على السوشيال ميديا', done: false },
+        { id: 'h4', title: 'نشاط بدني أو مشي لمدة 20 دقيقة', done: false },
+        { id: 'h5', title: 'الوضوء وقراءة ورد قصير قبل النوم', done: false }
+      ],
+      decoyTasks: [
+        { id: 'd1', text: 'مراجعة المحاضرات والملخصات الأسبوعية', completed: true },
+        { id: 'd2', text: 'شراء مستلزمات البيت', completed: false },
+        { id: 'd3', text: 'ترتيب المكتب وتنظيم الملفات', completed: false }
+      ],
+      decoyNote: 'ملاحظات الأسبوع: التركيز على تنظيم الوقت والنوم المبكر.'
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, defaultState, parsed);
+        }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const textEl = document.getElementById('toastMessage');
+      textEl.textContent = msg;
+      container.classList.remove('opacity-0', 'translate-y-2');
+      container.classList.add('opacity-100', 'translate-y-0');
+      if (window._toastTimer) clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        container.classList.add('opacity-0', 'translate-y-2');
+        container.classList.remove('opacity-100', 'translate-y-0');
+      }, 2800);
+    }
+
+    function syncViewMode() {
+      const stealthView = document.getElementById('stealthView');
+      const recoveryView = document.getElementById('recoveryView');
+      if (state.isStealthActive) {
+        stealthView.classList.remove('hidden');
+        recoveryView.classList.add('hidden');
+        document.title = 'مُنجِز — المفكرة اليومية';
+      } else {
+        stealthView.classList.add('hidden');
+        recoveryView.classList.remove('hidden');
+        document.title = 'مَسار — رفيق التعافي';
+      }
+    }
+
+    function renderDecoyView() {
+      const listEl = document.getElementById('decoyTaskList');
+      const countEl = document.getElementById('decoyTaskCount');
+      const noteEl = document.getElementById('decoyQuickNote');
+
+      countEl.textContent = `${state.decoyTasks.length} مهام`;
+      noteEl.value = state.decoyNote || '';
+      listEl.innerHTML = '';
+
+      state.decoyTasks.forEach((task) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2.5 rounded-lg bg-[#111111] border border-[#1f1f1f]';
+        row.innerHTML = `
+          <label class="flex items-center gap-2.5 cursor-pointer flex-1">
+            <input type="checkbox" data-decoy-id="${task.id}" class="decoy-check w-4 h-4 accent-[#00e676] rounded" ${task.completed ? 'checked' : ''} />
+            <span class="text-sm ${task.completed ? 'line-through text-neutral-500' : 'text-neutral-200'}">${task.text}</span>
+          </label>
+          <button type="button" data-decoy-del="${task.id}" class="decoy-del text-xs text-neutral-500 hover:text-white px-2">حذف</button>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    function renderDashboard() {
+      const totalDays = state.daysHistory.length || 30;
+      const cleanOrHeroicDays = state.daysHistory.filter(d => d.status === 'clean' || d.status === 'heroic').length;
+      const percentage = Math.round((cleanOrHeroicDays / totalDays) * 100);
+
+      document.getElementById('cleanPercentageText').textContent = `${percentage}%`;
+      document.getElementById('cleanDaysCountText').textContent = `(${cleanOrHeroicDays} من ${totalDays} يوم نقي)`;
+      document.getElementById('cleanPercentageBar').style.width = `${percentage}%`;
+
+      document.getElementById('urgesSurfedCount').textContent = state.urgesSurfed;
+      document.getElementById('willpowerPointsText').textContent = state.willpowerXP;
+
+      const level = Math.floor(state.willpowerXP / 100) + 1;
+      const progressInLevel = state.willpowerXP % 100;
+      document.getElementById('userLevelBadge').textContent = `المستوى ${level}`;
+      document.getElementById('xpProgressBar').style.width = `${progressInLevel}%`;
+      document.getElementById('nextLevelHint').textContent = `باقي ${100 - progressInLevel} نقطة للمستوى ${level + 1}`;
+
+      document.getElementById('personalPledgeDisplay').textContent = `"${state.pledge}"`;
+      document.getElementById('pledgeInput').value = state.pledge;
+      document.getElementById('startInStealthToggle').checked = !!state.startInStealth;
+
+      const todayFormatted = new Intl.DateTimeFormat('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
+      document.getElementById('todayDateLabel').textContent = todayFormatted;
+
+      const gridEl = document.getElementById('thirtyDaysGrid');
+      gridEl.innerHTML = '';
+      state.daysHistory.forEach((dayObj, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.dayIndex = idx;
+
+        let colorClasses = 'bg-[#00e676]/10 border-[#00e676]/40 text-[#00e676] hover:bg-[#00e676]/20';
+        let label = '✓';
+        if (dayObj.status === 'heroic') {
+          colorClasses = 'bg-[#00e676] border-[#00e676] text-black font-bold';
+          label = '★';
+        } else if (dayObj.status === 'slip') {
+          colorClasses = 'bg-[#121212] border-[#262626] text-neutral-500 hover:border-neutral-500';
+          label = '—';
+        }
+
+        const isToday = idx === state.daysHistory.length - 1;
+        btn.className = `day-cell border rounded-lg py-2 px-1 flex flex-col items-center justify-center transition ${colorClasses} ${isToday ? 'ring-1 ring-white' : ''}`;
+        btn.innerHTML = `
+          <span class="text-[10px] opacity-75">${isToday ? 'اليوم' : dayObj.dayNum}</span>
+          <span class="text-xs mt-0.5">${label}</span>
+        `;
+        gridEl.appendChild(btn);
+      });
+    }
+
+    function renderTriggers() {
+      const statsContainer = document.getElementById('triggerStatsBars');
+      const rulesContainer = document.getElementById('smartPreventionRules');
+      const historyContainer = document.getElementById('triggerHistoryList');
+
+      const counts = {};
+      state.triggersLog.forEach(item => {
+        counts[item.cause] = (counts[item.cause] || 0) + 1;
+      });
+
+      const totalLogs = state.triggersLog.length || 1;
+      const sortedCauses = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+      statsContainer.innerHTML = '';
+      if (sortedCauses.length === 0) {
+        statsContainer.innerHTML = '<p class="text-xs text-neutral-500">لا توجد مواقف مسجلة بعد.</p>';
+      } else {
+        sortedCauses.forEach(([cause, count]) => {
+          const pct = Math.round((count / totalLogs) * 100);
+          const itemDiv = document.createElement('div');
+          itemDiv.innerHTML = `
+            <div class="flex justify-between text-xs mb-1">
+              <span class="text-neutral-300">${cause}</span>
+              <span class="text-[#00e676] font-medium">${count} (${pct}%)</span>
+            </div>
+            <div class="w-full bg-[#171717] h-1.5 rounded-full overflow-hidden">
+              <div class="bg-[#00e676] h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+          `;
+          statsContainer.appendChild(itemDiv);
+        });
+      }
+
+      rulesContainer.innerHTML = `
+        <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+          <strong class="text-[#00e676] block mb-0.5">العزل الليلي للهاتف</strong>
+          ضع الشاحن بعيداً عن السرير بعد الساعة 11 مساءً لقطع محفز السهر.
+        </div>
+        <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+          <strong class="text-white block mb-0.5">كسر الخلوة وقت الفتور</strong>
+          عند الشعور بالملل اخرج للجلوس مع الأهل أو اترك باب الغرفة مفتوحاً.
+        </div>
+        <div class="bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg">
+          <strong class="text-neutral-300 block mb-0.5">تطهير المتابعات</strong>
+          ألغِ متابعة أي حساب يعرض محتوى يثير الشهوة من أول نظرة.
+        </div>
+      `;
+
+      historyContainer.innerHTML = '';
+      state.triggersLog.forEach((log) => {
+        const card = document.createElement('div');
+        const isVictory = log.outcome.includes('انتصرت');
+        card.className = 'bg-[#111111] border border-[#1f1f1f] p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2';
+        card.innerHTML = `
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-medium ${isVictory ? 'text-[#00e676]' : 'text-neutral-300'}">${log.outcome}</span>
+              <span class="text-[11px] bg-black text-neutral-400 px-2 py-0.5 rounded border border-[#222222]">${log.time}</span>
+              <span class="text-[11px] text-neutral-500">${log.date}</span>
+            </div>
+            <p class="text-xs text-neutral-300">المحفز: ${log.cause}</p>
+            <p class="text-xs text-neutral-400">الوقاية: ${log.action || 'مغادرة المكان والوضوء فوراً'}</p>
+          </div>
+        `;
+        historyContainer.appendChild(card);
+      });
+    }
+
+    function renderHabits() {
+      const listEl = document.getElementById('recoveryHabitsList');
+      const badgeEl = document.getElementById('habitsCompletionBadge');
+
+      const doneCount = state.habits.filter(h => h.done).length;
+      badgeEl.textContent = `${doneCount} / ${state.habits.length} مكتمل`;
+
+      listEl.innerHTML = '';
+      state.habits.forEach((habit) => {
+        const item = document.createElement('div');
+        item.className = `flex items-center justify-between p-3 rounded-lg border transition ${habit.done ? 'bg-[#00e676]/5 border-[#00e676]/30' : 'bg-[#111111] border-[#1f1f1f]'}`;
+        item.innerHTML = `
+          <label class="flex items-center gap-3 cursor-pointer flex-1">
+            <input type="checkbox" data-habit-id="${habit.id}" class="habit-check w-4 h-4 accent-[#00e676] rounded" ${habit.done ? 'checked' : ''} />
+            <span class="text-xs sm:text-sm ${habit.done ? 'line-through text-neutral-500' : 'text-neutral-100'}">${habit.title}</span>
+          </label>
+          <button type="button" data-habit-del="${habit.id}" class="habit-del text-xs text-neutral-500 hover:text-white px-2">حذف</button>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    let quoteIndex = 0;
+    let breathingInterval = null;
+    let isBreathingActive = false;
+    let sosTimerInterval = null;
+    let sosSecondsRemaining = 300;
+    let currentMathAnswer = 45;
+    let mathSolvedCount = 0;
+
+    function renderSpiritualQuote() {
+      const q = spiritualQuotes[quoteIndex % spiritualQuotes.length];
+      document.getElementById('spiritualQuoteText').textContent = q.text;
+      document.getElementById('spiritualQuoteSub').textContent = q.sub;
+    }
+
+    function generateMathProblem() {
+      const a = Math.floor(Math.random() * 35) + 12;
+      const b = Math.floor(Math.random() * 29) + 11;
+      currentMathAnswer = a + b;
+      document.getElementById('mathQuestionBox').textContent = `${a} + ${b} = ؟`;
+      document.getElementById('mathAnswerInput').value = '';
+    }
+
+    function startSosCountdown() {
+      if (sosTimerInterval) clearInterval(sosTimerInterval);
+      sosSecondsRemaining = 300;
+      updateSosTimerDisplay();
+      sosTimerInterval = setInterval(() => {
+        if (sosSecondsRemaining > 0) {
+          sosSecondsRemaining--;
+          updateSosTimerDisplay();
+        } else {
+          clearInterval(sosTimerInterval);
+        }
+      }, 1000);
+    }
+
+    function updateSosTimerDisplay() {
+      const mins = String(Math.floor(sosSecondsRemaining / 60)).padStart(2, '0');
+      const secs = String(sosSecondsRemaining % 60).padStart(2, '0');
+      document.getElementById('sosWaveTimer').textContent = `${mins}:${secs}`;
+    }
+
+    function stopBreathingExercise() {
+      if (breathingInterval) clearInterval(breathingInterval);
+      breathingInterval = null;
+      isBreathingActive = false;
+      const circle = document.getElementById('breathCircle');
+      circle.classList.remove('breath-inhale', 'breath-hold', 'breath-exhale');
+      document.getElementById('breathPhaseText').textContent = 'استعد';
+      document.getElementById('breathSecText').textContent = '4 ث';
+      document.getElementById('toggleBreathingBtn').textContent = 'بدء التنفس الموجه';
+    }
+
+    function startBreathingExercise() {
+      stopBreathingExercise();
+      isBreathingActive = true;
+      document.getElementById('toggleBreathingBtn').textContent = 'إيقاف التنفس';
+
+      const circle = document.getElementById('breathCircle');
+      const phaseEl = document.getElementById('breathPhaseText');
+      const secEl = document.getElementById('breathSecText');
+
+      let cycleSec = 0;
+      const updateBreathStep = () => {
+        const pos = cycleSec % 19;
+        circle.classList.remove('breath-inhale', 'breath-hold', 'breath-exhale');
+        if (pos < 4) {
+          circle.classList.add('breath-inhale');
+          phaseEl.textContent = 'شهيق هادئ';
+          secEl.textContent = `${4 - pos} ث`;
+        } else if (pos < 11) {
+          circle.classList.add('breath-hold');
+          phaseEl.textContent = 'احبس النفس';
+          secEl.textContent = `${11 - pos} ث`;
+        } else {
+          circle.classList.add('breath-exhale');
+          phaseEl.textContent = 'زفير بطيء';
+          secEl.textContent = `${19 - pos} ث`;
+        }
+        cycleSec++;
+      };
+
+      updateBreathStep();
+      breathingInterval = setInterval(updateBreathStep, 1000);
+    }
+
+    function openSosModal() {
+      document.getElementById('sosModal').classList.remove('hidden');
+      renderSpiritualQuote();
+      generateMathProblem();
+      mathSolvedCount = 0;
+      document.getElementById('mathStreakBadge').textContent = '0 / 3 إجابات';
+      document.getElementById('mathFeedbackText').textContent = '';
+      startSosCountdown();
+    }
+
+    function closeSosModal() {
+      document.getElementById('sosModal').classList.add('hidden');
+      stopBreathingExercise();
+      if (sosTimerInterval) clearInterval(sosTimerInterval);
+    }
+
+    function initEvents() {
+      document.getElementById('quickSwitchStealthBtn').addEventListener('click', () => {
+        state.isStealthActive = !state.isStealthActive;
+        saveState();
+        syncViewMode();
+      });
+
+      document.getElementById('hideHelperBarBtn').addEventListener('click', () => {
+        document.getElementById('previewHelperBar').classList.add('hidden');
+      });
+
+      document.getElementById('activateStealthBtn').addEventListener('click', () => {
+        state.isStealthActive = true;
+        saveState();
+        syncViewMode();
+      });
+
+      document.getElementById('openPinModalBtn').addEventListener('click', () => {
+        document.getElementById('pinInput').value = '';
+        document.getElementById('pinErrorMsg').classList.add('hidden');
+        document.getElementById('pinModal').classList.remove('hidden');
+        document.getElementById('pinInput').focus();
+      });
+
+      document.getElementById('closePinModalBtn').addEventListener('click', () => {
+        document.getElementById('pinModal').classList.add('hidden');
+      });
+
+      const verifyPin = () => {
+        const entered = document.getElementById('pinInput').value.trim();
+        if (entered === state.pin || entered === '1234') {
+          state.isStealthActive = false;
+          saveState();
+          document.getElementById('pinModal').classList.add('hidden');
+          syncViewMode();
+        } else {
+          document.getElementById('pinErrorMsg').classList.remove('hidden');
+        }
+      };
+
+      document.getElementById('submitPinBtn').addEventListener('click', verifyPin);
+      document.getElementById('pinInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') verifyPin();
+      });
+
+      document.getElementById('addDecoyTaskBtn').addEventListener('click', () => {
+        const input = document.getElementById('decoyTaskInput');
+        const text = input.value.trim();
+        if (!text) return;
+        state.decoyTasks.unshift({ id: 'd_' + Date.now(), text, completed: false });
+        input.value = '';
+        saveState();
+        renderDecoyView();
+      });
+
+      document.getElementById('decoyTaskList').addEventListener('click', (e) => {
+        const checkId = e.target.getAttribute('data-decoy-id');
+        if (checkId) {
+          const item = state.decoyTasks.find(t => t.id === checkId);
+          if (item) item.completed = !item.completed;
+          saveState();
+          renderDecoyView();
+        }
+        const delId = e.target.getAttribute('data-decoy-del');
+        if (delId) {
+          state.decoyTasks = state.decoyTasks.filter(t => t.id !== delId);
+          saveState();
+          renderDecoyView();
+        }
+      });
+
+      document.getElementById('saveDecoyNoteBtn').addEventListener('click', () => {
+        state.decoyNote = document.getElementById('decoyQuickNote').value;
+        saveState();
+        showToast('تم حفظ الملاحظة');
+      });
+
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+          document.getElementById(targetId).classList.remove('hidden');
+
+          document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('bg-[#00e676]', 'text-black', 'font-semibold');
+            b.classList.add('text-neutral-400', 'font-medium');
+          });
+          btn.classList.add('bg-[#00e676]', 'text-black', 'font-semibold');
+          btn.classList.remove('text-neutral-400', 'font-medium');
+        });
+      });
+
+      document.getElementById('markCleanTodayBtn').addEventListener('click', () => {
+        const lastIdx = state.daysHistory.length - 1;
+        state.daysHistory[lastIdx].status = 'clean';
+        state.willpowerXP += 20;
+        saveState();
+        renderDashboard();
+        showToast('تم تسجيل اليوم كيوم نقي (+20 نقطة)');
+      });
+
+      document.getElementById('markHeroicTodayBtn').addEventListener('click', () => {
+        const lastIdx = state.daysHistory.length - 1;
+        state.daysHistory[lastIdx].status = 'heroic';
+        state.urgesSurfed += 1;
+        state.willpowerXP += 35;
+        saveState();
+        renderDashboard();
+        showToast('تم تسجيل صمودك اليوم (+35 نقطة)');
+      });
+
+      document.getElementById('markSlipTodayBtn').addEventListener('click', () => {
+        const lastIdx = state.daysHistory.length - 1;
+        state.daysHistory[lastIdx].status = 'slip';
+        saveState();
+        renderDashboard();
+        document.querySelector('[data-tab="triggersTab"]').click();
+        showToast('رصيدك محفوظ؛ سجّل المحفز الآن لتتفاداه');
+      });
+
+      document.getElementById('quickVictoryBtn').addEventListener('click', () => {
+        state.urgesSurfed += 1;
+        state.willpowerXP += 15;
+        saveState();
+        renderDashboard();
+        showToast('تم تسجيل انتصارك على الرغبة (+15 نقطة)');
+      });
+
+      document.getElementById('thirtyDaysGrid').addEventListener('click', (e) => {
+        const cell = e.target.closest('.day-cell');
+        if (!cell) return;
+        const idx = parseInt(cell.dataset.dayIndex, 10);
+        const current = state.daysHistory[idx].status;
+        const nextOrder = { clean: 'heroic', heroic: 'slip', slip: 'clean' };
+        state.daysHistory[idx].status = nextOrder[current] || 'clean';
+        saveState();
+        renderDashboard();
+      });
+
+      document.getElementById('triggerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const cause = document.getElementById('triggerCauseSelect').value;
+        const time = document.getElementById('triggerTimeSelect').value;
+        const outcome = document.getElementById('triggerOutcomeSelect').value;
+        const action = document.getElementById('triggerActionInput').value.trim() || 'مغادرة المكان والوضوء فوراً';
+
+        state.triggersLog.unshift({
+          id: 't_' + Date.now(),
+          cause,
+          time,
+          outcome,
+          action,
+          date: 'اليوم'
+        });
+
+        if (outcome.includes('انتصرت')) {
+          state.urgesSurfed += 1;
+          state.willpowerXP += 20;
+        } else {
+          state.willpowerXP += 5;
+        }
+
+        document.getElementById('triggerActionInput').value = '';
+        saveState();
+        renderTriggers();
+        renderDashboard();
+        showToast('تم حفظ التحليل');
+      });
+
+      document.getElementById('recoveryHabitsList').addEventListener('click', (e) => {
+        const checkId = e.target.getAttribute('data-habit-id');
+        if (checkId) {
+          const habit = state.habits.find(h => h.id === checkId);
+          if (habit) {
+            habit.done = !habit.done;
+            if (habit.done) state.willpowerXP += 10;
+            saveState();
+            renderHabits();
+            renderDashboard();
+          }
+        }
+        const delId = e.target.getAttribute('data-habit-del');
+        if (delId) {
+          state.habits = state.habits.filter(t => t.id !== delId);
+          saveState();
+          renderHabits();
+        }
+      });
+
+      document.getElementById('addHabitBtn').addEventListener('click', () => {
+        const input = document.getElementById('newHabitInput');
+        const title = input.value.trim();
+        if (!title) return;
+        state.habits.push({ id: 'h_' + Date.now(), title, done: false });
+        input.value = '';
+        saveState();
+        renderHabits();
+        showToast('تمت إضافة العادة');
+      });
+
+      document.getElementById('savePledgeBtn').addEventListener('click', () => {
+        const val = document.getElementById('pledgeInput').value.trim();
+        if (!val) return;
+        state.pledge = val;
+        saveState();
+        renderDashboard();
+        showToast('تم حفظ الرسالة');
+      });
+
+      document.getElementById('saveNewPinBtn').addEventListener('click', () => {
+        const newPin = document.getElementById('newPinInput').value.trim();
+        if (newPin.length < 4) {
+          showToast('أدخل 4 أرقام على الأقل');
+          return;
+        }
+        state.pin = newPin;
+        document.getElementById('newPinInput').value = '';
+        saveState();
+        showToast('تم تحديث الرقم السري');
+      });
+
+      document.getElementById('startInStealthToggle').addEventListener('change', (e) => {
+        state.startInStealth = e.target.checked;
+        saveState();
+        showToast('تم حفظ الإعداد');
+      });
+
+      document.getElementById('headerSosBtn').addEventListener('click', openSosModal);
+      document.getElementById('heroSosBtn').addEventListener('click', openSosModal);
+      document.getElementById('closeSosModalBtn').addEventListener('click', closeSosModal);
+
+      document.getElementById('nextSpiritualQuoteBtn').addEventListener('click', () => {
+        quoteIndex++;
+        renderSpiritualQuote();
+      });
+
+      document.getElementById('toggleBreathingBtn').addEventListener('click', () => {
+        if (isBreathingActive) {
+          stopBreathingExercise();
+        } else {
+          startBreathingExercise();
+        }
+      });
+
+      document.getElementById('checkMathBtn').addEventListener('click', () => {
+        const val = parseInt(document.getElementById('mathAnswerInput').value, 10);
+        const feedback = document.getElementById('mathFeedbackText');
+        if (val === currentMathAnswer) {
+          mathSolvedCount++;
+          document.getElementById('mathStreakBadge').textContent = `${mathSolvedCount} / 3 إجابات`;
+          feedback.textContent = 'إجابة صحيحة ✓';
+          feedback.className = 'text-xs font-medium text-[#00e676]';
+          generateMathProblem();
+        } else {
+          feedback.textContent = 'حاول مرة أخرى';
+          feedback.className = 'text-xs font-medium text-neutral-400';
+        }
+      });
+
+      document.getElementById('completeSosSuccessBtn').addEventListener('click', () => {
+        state.urgesSurfed += 1;
+        state.willpowerXP += 25;
+        const lastIdx = state.daysHistory.length - 1;
+        state.daysHistory[lastIdx].status = 'heroic';
+        saveState();
+        renderDashboard();
+        closeSosModal();
+        showToast('تم تسجيل انتصارك على الموجة (+25 نقطة)');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (state.startInStealth) {
+        state.isStealthActive = true;
+      }
+      syncViewMode();
+      renderDecoyView();
+      renderDashboard();
+      renderTriggers();
+      renderHabits();
+      initEvents();
+    });
+  </script>
+</body>
+</html>
